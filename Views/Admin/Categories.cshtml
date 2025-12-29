@@ -1,0 +1,43 @@
+﻿@model IEnumerable<ExchangeWebsite.Models.Category>
+@{
+    ViewData["Title"] = "Danh mục";
+}
+<h2>Danh mục</h2>
+<a class="btn btn-primary" href="@Url.Action("CreateCategory")">Tạo danh mục mới</a>
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Tên</th>
+            <th>Danh mục con</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cat in Model)
+        {
+            <tr>
+                <td>@cat.CategoryName</td>
+                <td>
+                    @if (cat.SubCategories != null)
+                    {
+                        foreach (var sub in cat.SubCategories)
+                        {
+                            <span class="badge bg-info text-dark">@sub.CategoryName</span>
+                            <form asp-action="DeleteCategory" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@sub.CategoryId" />
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa danh mục con này?');">Xóa</button>
+                            </form>
+                        }
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-primary" href="@Url.Action("EditCategory", new { id = cat.CategoryId })">Chỉnh sửa</a>
+                    <form asp-action="DeleteCategory" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@cat.CategoryId" />
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa danh mục này?');">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

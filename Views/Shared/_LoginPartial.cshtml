@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<ExchangeWebsite.Models.User> SignInManager
+@inject UserManager<ExchangeWebsite.Models.User> UserManager
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Quản lý">
+                Xin chào @UserManager.GetUserName(User)!
+            </a>
+            @{
+                var appUser = await UserManager.GetUserAsync(User);
+                var isAdmin = appUser != null && await UserManager.IsInRoleAsync(appUser, "Admin");
+                var isShipper = appUser != null && await UserManager.IsInRoleAsync(appUser, "Shipper");
+            }
+            <span>
+                @if (isAdmin)
+                {
+                    <span class="badge bg-danger">Quản trị</span>
+                }
+                else if (isShipper)
+                {
+                    <span class="badge bg-success ms-2" style="font-size:1rem;vertical-align:middle;">Shipper</span>
+                }
+                else if (appUser != null && appUser.IsVip == true && appUser.VipExpiration > DateTime.UtcNow)
+                {
+                    <span class="badge bg-warning text-dark ms-2">VIP</span>
+                }
+                else if (appUser != null)
+                {
+                    <a href="#" id="subscribeVipNav" class="btn btn-warning btn-sm ms-2" style="vertical-align:middle;">Đăng ký VIP</a>
+                }
+            </span>
+        </li>
+        <li class="nav-item">
+            <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Đăng xuất</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+        </li>
+    }
+</ul>

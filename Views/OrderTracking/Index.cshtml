@@ -1,0 +1,32 @@
+﻿@model IEnumerable<ExchangeWebsite.Models.ShippingRequest>
+
+<h2>Theo dõi đơn hàng</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Mã đơn hàng</th>
+            <th>Tiêu đề bài viết</th>
+            <th>Người nhận</th>
+            <th>Điện thoại người nhận</th>
+            <th>Địa chỉ người nhận</th>
+            <th>Giá vận chuyển</th>
+            <th>Trạng thái</th>
+            <th>Ngày yêu cầu</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.ShippingRequestId</td>
+                <td>@order.Post?.Title</td>
+                <td>@order.SenderName</td>
+                <td>@order.SenderPhone</td>
+                <td>@order.SenderAddress</td>
+                <td>@order.ShippingPrice.ToString("N0")</td>
+                <td>@order.Status</td>
+                <td>@order.RequestedAt.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>

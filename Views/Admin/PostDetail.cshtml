@@ -1,0 +1,34 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model ExchangeWebsite.Models.Post
+
+@{
+    ViewData["Title"] = "Chi tiết bài đăng";
+}
+
+<div class="container py-4">
+    <h2>@Model.Title</h2>
+    <div class="mb-3">
+        <strong>Danh mục:</strong> @Model.Category?.CategoryName <br />
+        <strong>Người đăng:</strong> @Model.User?.UserName <br />
+        <strong>Giá:</strong> @Model.Price VNĐ <br />
+        <strong>Thành phố:</strong> @Model.City <br />
+        <strong>Tình trạng:</strong> @Model.Condition <br />
+        <strong>Mô tả:</strong> @Model.Description <br />
+        <strong>Ngày đăng:</strong> @Model.PostedAt.ToString("g") <br />
+    </div>
+    <div class="mb-3">
+        <strong>Hình ảnh:</strong>
+        <div>
+            @foreach (var img in Model.PostImages)
+            {
+                <img src="@img.ImagePath" alt="Hình ảnh bài đăng" style="max-width:150px; margin:5px;" />
+            }
+        </div>
+    </div>
+    <form asp-action="DeletePost" asp-route-id="@Model.PostId" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài đăng này không?');">
+        <button type="submit" class="btn btn-danger">Xóa bài đăng</button>
+        <a asp-action="Posts" class="btn btn-secondary">Quay lại danh sách bài đăng</a>
+    </form>
+</div>

@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "Shipping Dashboard";
+}
+
+<style>
+    .shipper-dashboard-card {
+        min-width: 220px;
+        min-height: 180px;
+        background-color: #f4fff4;
+        border: 1.5px solid #b6eab6;
+        box-shadow: 0 2px 8px rgba(0,128,0,0.04);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #222;
+        transition: box-shadow 0.2s;
+    }
+    .shipper-dashboard-card:hover {
+        box-shadow: 0 4px 16px rgba(0,128,0,0.10);
+    }
+    .shipper-dashboard-card .card-title {
+        font-weight: 600;
+        color: #218838;
+    }
+    .shipper-dashboard-card .card-text {
+        font-size: 2.5rem;
+        color: #218838;
+    }
+    .shipper-dashboard-card .btn {
+        background: #218838;
+        color: #fff;
+        border: none;
+    }
+    .shipper-dashboard-card .btn:hover {
+        background: #145c2c;
+        color: #fff;
+    }
+</style>
+
+<div class="container-fluid px-0">
+    <h2 class="mb-4 ms-4 mt-4">Shipping Dashboard <span class="badge bg-success">Shipper</span></h2>
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-4 col-md-6 d-flex">
+            <div class="card shipper-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Đơn cần giao</h5>
+                    <p class="card-text">@ViewBag.AssignedCount</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="ShippingRequests" asp-controller="Shipping" class="btn btn-sm w-100">Xem đơn giao hàng</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 d-flex">
+            <div class="card shipper-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Đơn đã hoàn thành</h5>
+                    <p class="card-text">@ViewBag.CompletedCount</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="ShipperShippingRequests" asp-controller="Shipping" class="btn btn-sm w-100">Xem đơn đã giao</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

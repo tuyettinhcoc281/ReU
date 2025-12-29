@@ -1,0 +1,31 @@
+﻿@model IEnumerable<ExchangeWebsite.Models.Bill>
+@{
+    ViewData["Title"] = "Doanh thu";
+}
+<h2>Doanh thu gói VIP</h2>
+<p><b>Tổng doanh thu:</b> @ViewBag.TotalRevenue.ToString("C0")</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Người dùng</th>
+            <th>Số tiền</th>
+            <th>Phương thức thanh toán</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th>Thời hạn VIP</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var bill in Model)
+        {
+            <tr>
+                <td>@bill.User?.UserName</td>
+                <td>@bill.Amount.ToString("C0")</td>
+                <td>@bill.PaymentMethod</td>
+                <td>@bill.Status</td>
+                <td>@bill.CreatedAt.ToString("g")</td>
+                <td>@bill.SubscriptionStart.ToString("d") - @bill.SubscriptionEnd.ToString("d")</td>
+            </tr>
+        }
+    </tbody>
+</table>

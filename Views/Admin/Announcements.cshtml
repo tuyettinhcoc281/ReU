@@ -1,0 +1,100 @@
+﻿@model IEnumerable<ExchangeWebsite.Models.Announcement>
+@{
+    ViewData["Title"] = "Thông Báo";
+}
+
+<style>
+    .announcement-list {
+        max-width: 800px;
+        margin: 40px auto;
+    }
+
+    .announcement-card {
+        background: #fffbe6;
+        border: 1.5px solid #ffe066;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.08);
+        margin-bottom: 24px;
+        padding: 24px 28px 18px 28px;
+        position: relative;
+        transition: box-shadow 0.18s;
+    }
+
+        .announcement-card:hover {
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.18);
+        }
+
+    .announcement-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #b8860b;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .announcement-content {
+        font-size: 1.08rem;
+        color: #444;
+        margin-bottom: 10px;
+    }
+
+    .announcement-date {
+        font-size: 0.95rem;
+        color: #888;
+        font-style: italic;
+        text-align: right;
+    }
+
+    .announcement-icon {
+        color: #ffd700;
+        font-size: 1.5rem;
+        margin-right: 6px;
+    }
+
+    .create-announcement-btn {
+        margin-bottom: 24px;
+        background: #ffe066;
+        color: #b8860b;
+        border: none;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: background 0.18s;
+    }
+
+        .create-announcement-btn:hover {
+            background: #ffd700;
+            color: #a67c00;
+        }
+</style>
+
+<div class="announcement-list">
+    <h2 class="mb-4" style="font-weight:800; color:#b8860b;">
+        <span class="announcement-icon">📢</span>Thông Báo
+    </h2>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="CreateAnnouncement" class="btn create-announcement-btn">+ Tạo thông báo mới</a>
+    }
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning mt-4">Chưa có thông báo nào.</div>
+    }
+    else
+    {
+        foreach (var a in Model)
+        {
+            <div class="announcement-card">
+                <div class="announcement-title">
+                    <span class="announcement-icon">📢</span>
+                    @a.Title
+                </div>
+                <div class="announcement-content">@a.Content</div>
+                <div class="announcement-date">
+                    Đăng ngày: @a.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                </div>
+            </div>
+        }
+    }
+</div>

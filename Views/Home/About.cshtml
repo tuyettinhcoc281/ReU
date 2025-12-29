@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Giới thiệu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body {
+            background: linear-gradient(135deg, #f4f8ff 0%, #eaf1fb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .about-card {
+            background: #f4f8ff;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(56,103,246,0.07);
+            margin: 32px auto;
+            max-width: 1100px;
+            padding: 36px 32px 32px 32px;
+        }
+    </style>
+}
+
+<div class="about-card">
+    <h1 class="display-4 fw-bold text-primary mb-3">Giới thiệu về ReU</h1>
+    <p class="lead">
+        ReU là nền tảng trao đổi đồ đầu tiên tại Việt Nam, giúp kết nối những người có nhu cầu trao đổi, tặng hoặc nhận lại những món đồ cũ còn giá trị sử dụng. Chúng tôi tin rằng mỗi món đồ đều có một câu chuyện riêng và xứng đáng được tiếp tục hành trình của mình với chủ nhân mới.
+    </p>
+    <hr />
+    <h2 class="fw-semibold text-success mb-4">Sứ mệnh của chúng tôi</h2>
+    <p>
+        Xây dựng cộng đồng văn minh, tiết kiệm và thân thiện với môi trường, nơi mọi người có thể dễ dàng trao đổi những món đồ không còn sử dụng nhưng vẫn còn giá trị. Việc trao đổi đồ không chỉ giúp tiết kiệm chi phí mà còn góp phần giảm thiểu rác thải, bảo vệ môi trường và lan tỏa lối sống xanh.
+    </p>
+    <h2 class="fw-semibold text-primary mb-3 mt-5">Cách hoạt động</h2>
+    <ul class="list-group list-group-flush fs-5 mb-4">
+        <li class="list-group-item bg-transparent"><b>1. Đăng ký tài khoản:</b> Tham gia cộng đồng ReU chỉ với vài bước đơn giản.</li>
+        <li class="list-group-item bg-transparent"><b>2. Đăng tin trao đổi:</b> Chia sẻ thông tin về món đồ bạn muốn trao đổi hoặc tặng.</li>
+        <li class="list-group-item bg-transparent"><b>3. Tìm kiếm & liên hệ:</b> Dễ dàng tìm kiếm món đồ phù hợp và liên hệ với người đăng.</li>
+        <li class="list-group-item bg-transparent"><b>4. Thỏa thuận & trao đổi:</b> Hai bên tự do thỏa thuận hình thức trao đổi, giao nhận.</li>
+    </ul>
+    <div class="text-center mt-4">
+        <a href="https://www.facebook.com/perushiaa" class="btn btn-primary btn-lg px-5" target="_blank" rel="noopener">
+            Liên hệ với chúng tôi
+        </a>
+    </div>
+</div>

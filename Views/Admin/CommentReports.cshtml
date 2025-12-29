@@ -1,0 +1,36 @@
+﻿@model IEnumerable<ExchangeWebsite.Models.CommentReport>
+@{
+    ViewData["Title"] = "Bình luận bị báo cáo";
+}
+<h2>Bình luận bị báo cáo</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nội dung bình luận</th>
+            <th>Bài viết</th>
+            <th>Người báo cáo</th>
+            <th>Lý do</th>
+            <th>Thời gian báo cáo</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var report in Model)
+        {
+            <tr>
+                <td>@report.Comment?.Content</td>
+                <td>
+                    <a asp-controller="Category" asp-action="Post" asp-route-id="@report.Comment?.PostId">
+                        @report.Comment?.Post?.Title
+                    </a>
+                </td>
+                <td>@report.ReportedByUser?.UserName</td>
+                <td>@report.Reason</td>
+                <td>@report.ReportedAt.ToString("g")</td>
+                <td>
+                    <a asp-controller="Category" asp-action="Post" asp-route-id="@report.Comment?.PostId" class="btn btn-sm btn-info">Xem bài viết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

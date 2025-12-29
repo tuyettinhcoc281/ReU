@@ -1,0 +1,20 @@
+﻿@page
+@model VietQRModel
+
+@if (Model.PaymentSuccess)
+{
+    <div class="alert alert-success mt-4">
+        Thanh toán thành công! Bạn đã trở thành VIP trong 1 tháng.
+    </div>
+    <script>
+        setTimeout(function() {
+            window.location.href = '/';
+        }, 1000); // 3 giây
+    </script>
+}
+else
+{
+    <div class="alert alert-info mt-4">
+        Đang xử lý thanh toán...
+    </div>
+}

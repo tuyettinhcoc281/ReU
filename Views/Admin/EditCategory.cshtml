@@ -1,0 +1,29 @@
+﻿@model ExchangeWebsite.Models.Category
+@{
+    ViewData["Title"] = "Chỉnh sửa Danh mục";
+    var categories = ViewBag.Categories as List<ExchangeWebsite.Models.Category>;
+}
+<h2>Chỉnh sửa Danh mục</h2>
+<form asp-action="EditCategory" method="post">
+    <input type="hidden" asp-for="CategoryId" />
+    <div class="mb-3">
+        <label asp-for="CategoryName" class="form-label"></label>
+        <input asp-for="CategoryName" class="form-control" />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label>Danh mục cha (để trống nếu là danh mục chính)</label>
+        <select asp-for="ParentCategoryId" class="form-control">
+            <option value="">-- Không có --</option>
+            @if (categories != null)
+            {
+                foreach (var cat in categories)
+                {
+                    <option value="@cat.CategoryId" selected="@(cat.CategoryId == Model.ParentCategoryId)">@cat.CategoryName</option>
+                }
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Lưu</button>
+    <a href="@Url.Action("Categories")" class="btn btn-secondary">Quay lại</a>
+</form>

@@ -1,0 +1,313 @@
+﻿@model ExchangeWebsite.Models.Post
+@{
+    ViewData["Title"] = "Đăng tin mới";
+    var conditions = ViewBag.Conditions as List<string>;
+    var languages = ViewBag.Languages as List<string>;
+}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // VIP button
+        const btn = document.getElementById('subscribeVipModalBtn');
+        if (btn) {
+            btn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const response = await fetch('/api/PayOS/create-payment-link', { method: 'POST' });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    alert('Failed to create payment link.\n' + errorText);
+                    return;
+                }
+                const data = await response.json();
+                window.location.href = data.checkoutUrl;
+            });
+        }
+
+        // City/District dropdown
+        const citySelect = document.getElementById('citySelect');
+        const districtSelect = document.getElementById('districtSelect');
+         fetch('/Category/ProvincesProxy')
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(city => {
+                    const opt = document.createElement('option');
+                    opt.value = city.name;
+                    opt.textContent = city.name;
+                    opt.dataset.districts = JSON.stringify(city.districts);
+                    citySelect.appendChild(opt);
+                });
+            });
+        citySelect.addEventListener('change', function () {
+            districtSelect.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
+            const selected = citySelect.options[citySelect.selectedIndex];
+            if (selected && selected.dataset.districts) {
+                const districts = JSON.parse(selected.dataset.districts);
+                districts.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = d.name;
+                    districtSelect.appendChild(opt);
+                });
+            }
+        });
+
+        // Category dropdown
+        const allCategories = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.AllCategories));
+        const parentSelect = document.getElementById('parentCategory');
+        const subSelect = document.getElementById('subCategory');
+        parentSelect.addEventListener('change', function () {
+            const parentId = parseInt(this.value);
+            subSelect.innerHTML = '<option value="">-- Chọn danh mục phụ --</option>';
+            if (!parentId) return;
+            const subs = allCategories.filter(c => c.ParentCategoryId === parentId);
+            subs.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub.CategoryId;
+                opt.textContent = sub.CategoryName;
+                subSelect.appendChild(opt);
+            });
+        });
+    });
+</script>
+<style>
+    body {
+        background: linear-gradient(135deg, #f4f8ff 0%, #eaf1fb 100%);
+    }
+
+    .create-post-card {
+        background: #f4f8ff;
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(56,103,246,0.07);
+        margin: 48px auto 32px auto;
+        max-width: 700px;
+        padding: 36px 32px 32px 32px;
+        animation: fadeInUp 1.2s;
+    }
+
+    .create-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #3867f6;
+        margin-bottom: 18px;
+        text-align: center;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #3867f6;
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1.5px solid #b3d0ff;
+        margin-bottom: 18px;
+        font-size: 1.08rem;
+        padding: 10px 14px;
+        transition: border 0.18s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border: 1.5px solid #3867f6;
+            box-shadow: 0 2px 8px rgba(56,103,246,0.08);
+        }
+
+    .btn-primary {
+        background: linear-gradient(90deg, #3867f6 60%, #5f8fff 100%);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 12px 0;
+        width: 100%;
+        margin-top: 10px;
+        box-shadow: 0 4px 18px rgba(56,103,246,0.08);
+        transition: background 0.18s, box-shadow 0.18s;
+    }
+
+        .btn-primary:hover {
+            background: #3867f6;
+            box-shadow: 0 8px 32px rgba(56,103,246,0.16);
+        }
+
+    .alert {
+        margin-bottom: 18px;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="create-post-card">
+    <div class="create-title">Đăng tin mới</div>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+    @if (ViewBag.Errors != null)
+    {
+        <ul>
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li class="text-danger">@error</li>
+            }
+        </ul>
+    }
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    @using (Html.BeginForm("CreatePost", "Category", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <label asp-for="Title"></label>
+            @Html.TextBoxFor(m => m.Title, new { @class = "form-control", required = "required" })
+            @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="Price"></label>
+            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number", step = "0.01", min = "1000", required = "required" })
+            @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="City"></label>
+            <select id="citySelect" name="City" class="form-select" required>
+                <option value="">-- Chọn tỉnh/thành phố --</option>
+            </select>
+            @Html.ValidationMessageFor(m => m.City, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="District"></label>
+            <select id="districtSelect" name="District" class="form-select" required>
+                <option value="">-- Chọn quận/huyện --</option>
+            </select>
+            @Html.ValidationMessageFor(m => m.District, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="StreetAddress"></label>
+            @Html.TextBoxFor(m => m.StreetAddress, new { @class = "form-control", required = "required", placeholder = "Số nhà, tên đường..." })
+            @Html.ValidationMessageFor(m => m.StreetAddress, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="ZipCode"></label>
+            @Html.TextBoxFor(m => m.ZipCode, new { @class = "form-control", required = "required" })
+            @Html.ValidationMessageFor(m => m.ZipCode, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="Description"></label>
+            @Html.TextAreaFor(m => m.Description, 6, 80, new { @class = "form-control", required = "required" })
+            @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="Make"></label>
+            @Html.TextBoxFor(m => m.Make, new { @class = "form-control", required = "required" })
+            @Html.ValidationMessageFor(m => m.Make, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="ModelNumber"></label>
+            @Html.TextBoxFor(m => m.ModelNumber, new { @class = "form-control", required = "required" })
+            @Html.ValidationMessageFor(m => m.ModelNumber, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="Condition"></label>
+            @Html.DropDownListFor(m => m.Condition, new SelectList(conditions), "--", new { @class = "form-select", required = "required" })
+            @Html.ValidationMessageFor(m => m.Condition, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="Language"></label>
+            @Html.DropDownListFor(m => m.Language, new SelectList(languages), "--", new { @class = "form-select", required = "required" })
+            @Html.ValidationMessageFor(m => m.Language, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label class="form-label">Danh mục chính</label>
+            <select id="parentCategory" class="form-select" required>
+                <option value="">-- Chọn danh mục chính --</option>
+                @foreach (var parent in ViewBag.ParentCategories)
+                {
+                    <option value="@parent.CategoryId">@parent.CategoryName</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Danh mục phụ</label>
+            <select id="subCategory" name="CategoryId" class="form-select" required>
+                <option value="">-- Chọn danh mục phụ --</option>
+            </select>
+            @Html.ValidationMessageFor(m => m.CategoryId, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="ContactEmail"></label>
+            @Html.TextBoxFor(m => m.ContactEmail, new { @class = "form-control", type = "email", required = "required" })
+            @Html.ValidationMessageFor(m => m.ContactEmail, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            <label asp-for="PhoneNumber"></label>
+            @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", required = "required", placeholder = "Số điện thoại" })
+            @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-2">
+            @Html.CheckBoxFor(m => m.ShowAddress) <span class="form-label" style="font-weight:400;">Hiển thị địa chỉ</span>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Hình ảnh tin đăng</label>
+            <input type="file" name="images" multiple class="form-control" required />
+            <span class="text-danger" data-valmsg-for="images"></span>
+        </div>
+        <div class="mb-2">
+            @Html.CheckBoxFor(m => m.CryptocurrencyAccepted) <span class="form-label" style="font-weight:400;">Chấp nhận tiền mã hóa</span>
+            @Html.CheckBoxFor(m => m.DeliveryAvailable) <span class="form-label" style="font-weight:400;">Có giao hàng</span>
+        </div>
+        <button type="submit" class="btn btn-primary">Tiếp tục</button>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+@if (ViewBag.ShowVipModal == true)
+{
+    <div class="modal fade show" id="vipModal" tabindex="-1" aria-modal="true" style="display:block;" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">Nâng cấp VIP</h5>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        <strong>Bạn đã đạt giới hạn 1 tin cho tài khoản miễn phí.</strong>
+                    </p>
+                    <ul>
+                        <li>Đăng tin không giới hạn</li>
+                        <li>Hỗ trợ ưu tiên</li>
+                        <li>Huy hiệu VIP trên hồ sơ</li>
+                    </ul>
+                    <p>Đăng ký VIP để mở khóa đăng tin không giới hạn và nhiều quyền lợi khác!</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="subscribeVipModalBtn" class="btn btn-warning">Đăng ký VIP</a>
+                    <a href="javascript:void(0);" class="btn btn-secondary" onclick="closeVipModal()">Đóng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    <script>
+        function closeVipModal() {
+            document.getElementById('vipModal').style.display = 'none';
+            document.querySelector('.modal-backdrop').remove();
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+    </script>
+}

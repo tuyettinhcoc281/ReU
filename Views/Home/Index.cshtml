@@ -1,0 +1,387 @@
+﻿@model List<ExchangeWebsite.Models.Category>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ExchangeWebsite.Models.User> UserManager
+
+@{
+    ExchangeWebsite.Models.User? appUser = null;
+    if (User.Identity != null && User.Identity.IsAuthenticated && UserManager != null)
+    {
+        appUser = await UserManager.GetUserAsync(User);
+    }
+}
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #f4f8ff 0%, #eaf1fb 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .explore-header {
+        text-align: center;
+        margin-top: 48px;
+        margin-bottom: 12px;
+        animation: fadeInDown 1s;
+    }
+    .explore-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #3867f6;
+        margin-bottom: 12px;
+        letter-spacing: 1px;
+    }
+    .explore-header p {
+        font-size: 1.35rem;
+        color: #555;
+        margin-bottom: 36px;
+        font-weight: 400;
+    }
+    .explore-actions {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        margin-bottom: 48px;
+        animation: fadeInUp 1.2s;
+    }
+    .explore-btn {
+        min-width: 200px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 14px;
+        padding: 18px 0;
+        box-shadow: 0 6px 24px rgba(56,103,246,0.10);
+        transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .explore-btn.create {
+        background: linear-gradient(90deg, #3867f6 60%, #5f8fff 100%);
+        color: #fff;
+    }
+    .explore-btn.create:hover {
+        background: #3867f6;
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 10px 32px rgba(56,103,246,0.18);
+    }
+    .explore-btn.your {
+        background: linear-gradient(90deg, #19c37d 60%, #3be08f 100%);
+        color: #fff;
+    }
+    .explore-btn.your:hover {
+        background: #19c37d;
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 10px 32px rgba(25,195,125,0.18);
+    }
+    .category-card {
+        background: #f4f8ff;
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(56,103,246,0.07);
+        margin: 32px auto 32px auto;
+        max-width: 1200px;
+        padding: 36px 32px 32px 32px;
+        position: relative;
+        animation: fadeInUp 1.2s;
+    }
+    .category-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #3867f6;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .category-title::before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 38px;
+        background: #3867f6;
+        border-radius: 4px;
+        margin-right: 12px;
+    }
+    .subcategory-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-top: 12px;
+        margin-bottom: 0;
+        padding-left: 0;
+        list-style: none;
+        align-items: flex-start;
+    }
+    .subcategory-list li {
+        margin: 0;
+        padding: 0;
+        position: relative;
+    }
+    .subcategory-link {
+        display: inline-block;
+        background: #fff;
+        color: #3867f6;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 16px 32px;
+        border-radius: 12px;
+        border: 1.5px solid #b3d0ff;
+        text-decoration: none;
+        box-shadow: 0 2px 12px rgba(56,103,246,0.04);
+        transition: background 0.18s, color 0.18s, box-shadow 0.18s, border 0.18s, transform 0.18s;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    .subcategory-link:hover, .subcategory-link:focus {
+        background: #3867f6;
+        color: #fff;
+        border: 1.5px solid #3867f6;
+        box-shadow: 0 6px 24px rgba(56,103,246,0.13);
+        transform: translateY(-2px) scale(1.04);
+    }
+    /* Animation Keyframes */
+    @@keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-40px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    /* Responsive */
+    @@media (max-width: 900px) {
+        .explore-header h1 { font-size: 2.1rem; }
+        .category-card { padding: 18px 8px 18px 8px; }
+        .subcategory-link { font-size: 1rem; padding: 10px 16px; }
+        .category-title { font-size: 1.2rem; }
+    }
+</style>
+
+<div class="explore-header">
+    <h1>Khám phá Danh mục</h1>
+    <p>Khám phá nội dung tuyệt vời qua các danh mục và phân mục</p>
+    <div class="explore-actions">
+        <a href="@Url.Action("CreatePost", "Category")" class="explore-btn create">
+            <span style="font-size:1.3em;vertical-align:middle;">&#43;</span> &nbsp;Đăng tin mới
+        </a>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a href="@Url.Action("MyPost", "Category")" class="explore-btn your">
+                <span style="font-size:1.3em;vertical-align:middle;">&#128100;</span> &nbsp;Tin của bạn
+            </a>
+        }
+       
+    </div>
+</div>
+<div id="payos-checkout-container"></div>
+
+@* Top 3 VIP Posts *@
+@if (ViewBag.TopVipPosts != null && ((List<ExchangeWebsite.Models.Post>)ViewBag.TopVipPosts).Any())
+{
+    <div class="category-card">
+        <div class="category-title" style="color:#f7b731;">
+            <span style="font-size:1.5rem;">&#11088;</span> Hot Posts
+        </div>
+        <div class="posts-grid" style="display: flex; gap: 18px; flex-wrap: wrap;">
+            @foreach (var post in (List<ExchangeWebsite.Models.Post>)ViewBag.TopVipPosts)
+            {
+                <div class="post-card" style="min-width:300px;max-width:350px;">
+                    <a href="@Url.Action("Post", "Category", new { id = post.PostId })" style="text-decoration:none;color:inherit;">
+                        @if (post.PostImages != null && post.PostImages.Any())
+                        {
+                            <img src="@post.PostImages.First().ImagePath" class="post-img" alt="Post Image" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />
+                        }
+                        <div class="post-title" style="font-weight:700;color:#f7b731;">@post.Title</div>
+                        <div class="post-desc">@post.Description</div>
+                        <div class="post-meta" style="font-size:0.92rem;color:#888;">
+                            <span>@(post.Price.HasValue? post.Price.Value.ToString("C0") : "")</span>
+                            <span> | @post.City, @post.ZipCode</span>
+                        </div>
+                        <div class="post-meta" style="font-size:small;">
+                            Posted @post.PostedAt.ToLocalTime().ToString("g")
+                        </div>
+                    </a>
+                    <div class="mt-2">
+                        <a href="@Url.Action("Post", "Category", new { id = post.PostId })" class="btn btn-primary btn-sm">View</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@* Paginated VIP Posts *@
+@if (ViewBag.FeaturedVipPosts != null && ((List<ExchangeWebsite.Models.Post>)ViewBag.FeaturedVipPosts).Any())
+{
+    <div class="category-card">
+        <div class="category-title" style="color:#f7b731;">
+            <span style="font-size:1.5rem;">&#11088;</span> Hot Posts 
+        </div>
+        <div class="posts-grid" style="display: flex; gap: 18px; flex-wrap: wrap;">
+            @foreach (var post in (List<ExchangeWebsite.Models.Post>)ViewBag.FeaturedVipPosts)
+            {
+                <div class="post-card" style="min-width:300px;max-width:350px;">
+                    <a href="@Url.Action("Post", "Category", new { id = post.PostId })" style="text-decoration:none;color:inherit;">
+                        @if (post.PostImages != null && post.PostImages.Any())
+                        {
+                            <img src="@post.PostImages.First().ImagePath" class="post-img" alt="Post Image" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />
+                        }
+                        <div class="post-title" style="font-weight:700;color:#f7b731;">@post.Title</div>
+                        <div class="post-desc">@post.Description</div>
+                        <div class="post-meta" style="font-size:0.92rem;color:#888;">
+                            <span>@(post.Price.HasValue? post.Price.Value.ToString("C0") : "")</span>
+                            <span> | @post.City, @post.ZipCode</span>
+                        </div>
+                        <div class="post-meta" style="font-size:small;">
+                            Posted @post.PostedAt.ToLocalTime().ToString("g")
+                        </div>
+                    </a>
+                    <div class="mt-2">
+                        <a href="@Url.Action("Post", "Category", new { id = post.PostId })" class="btn btn-primary btn-sm">View</a>
+                    </div>
+                </div>
+            }
+        </div>
+        @* Pagination *@
+        <nav aria-label="VIP post pagination" class="mt-3">
+            <ul class="pagination justify-content-center">
+                @{
+                    int vipPage = ViewBag.VipPage ?? 1;
+                    int vipTotalPages = ViewBag.VipTotalPages ?? 1;
+                    int startPage = Math.Max(1, vipPage - 1);
+                    int endPage = Math.Min(vipTotalPages, vipPage + 1);
+                }
+                <li class="page-item @(vipPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", "Home", new { vipPage = vipPage - 1 })">Previous</a>
+                </li>
+                @if (startPage > 1)
+                {
+                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", "Home", new { vipPage = 1 })">1</a></li>
+                    @if (startPage > 2)
+                    {
+                        <li class="page-item">
+                            <a href="javascript:void(0);" class="page-link page-ellipsis" data-pos="start">...</a>
+                        </li>
+                    }
+                }
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == vipPage ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", "Home", new { vipPage = i })">@i</a>
+                    </li>
+                }
+                @if (endPage < vipTotalPages)
+                {
+                    if (endPage < vipTotalPages - 1)
+                    {
+                        <li class="page-item">
+                            <a href="javascript:void(0);" class="page-link page-ellipsis" data-pos="end">...</a>
+                        </li>
+                    }
+                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", "Home", new { vipPage = vipTotalPages })">@vipTotalPages</a></li>
+                }
+                <li class="page-item @(vipPage == vipTotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", "Home", new { vipPage = vipPage + 1 })">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+}
+
+
+@foreach (var category in Model)
+{
+    <div class="category-card">
+        <div class="category-title">@category.CategoryName</div>
+        <ul class="subcategory-list">
+            @foreach (var subCategory in category.SubCategories.OrderBy(sc => sc.DisplayOrder))
+            {
+                <li>
+                    <a class="subcategory-link" href="@Url.Action("Index", "Category", new { id = subCategory.CategoryId })">
+                        @subCategory.CategoryName
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@section Scripts {
+<script src="https://cdn.payos.vn/payos-checkout/v1/stable/payos-initialize.js"></script>
+<script>
+document.getElementById('subscribeVipBtn').addEventListener('click', async function() {
+    // Call your API to create the payment link
+    const response = await fetch('/api/PayOS/create-payment-link', { method: 'POST' });
+    const data = await response.json();
+    const checkoutUrl = data.checkoutUrl;
+
+    // Initialize PayOS embedded checkout
+    window.usePayOS({
+        RETURN_URL: data.returnUrl,
+        ELEMENT_ID: "payos-checkout-container",
+        CHECKOUT_URL: checkoutUrl,
+        embedded: true,
+        onSuccess: function(event) {
+            window.location.href = data.returnUrl;
+        }
+    }).open();
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('subscribeVipBtn');
+    if (btn) {
+        btn.addEventListener('click', async function() {
+            const response = await fetch('/api/PayOS/create-payment-link', { method: 'POST' });
+            if (!response.ok) {
+                const errorText = await response.text();
+                alert('Failed to create payment link.\n' + errorText);
+                return;
+            }
+            const data = await response.json();
+            // Redirect to PayOS payment page
+            window.location.href = data.checkoutUrl;
+        });
+    }
+});
+</script>
+<script>
+    document.querySelectorAll('.page-ellipsis').forEach(function (el) {
+        el.addEventListener('click', function () {
+            if (el.querySelector('input')) return;
+            var input = document.createElement('input');
+            input.type = 'number';
+            input.min = 1;
+            input.max = @((int)(ViewBag.VipTotalPages ?? 1));
+            input.style.width = '50px';
+            input.style.height = '28px';
+            input.style.textAlign = 'center';
+            input.value = '';
+            input.placeholder = '...';
+            el.innerHTML = '';
+            el.appendChild(input);
+            input.focus();
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    var val = parseInt(input.value);
+                    if (!isNaN(val) && val >= 1 && val <= @((int)(ViewBag.VipTotalPages ?? 1))) {
+                        window.location.href = '@Url.Action("Index", "Home")' + '?vipPage=' + val;
+                    }
+                }
+                if (e.key === 'Escape') {
+                    el.innerHTML = '...';
+                }
+            });
+
+            input.addEventListener('blur', function () {
+                setTimeout(function () { el.innerHTML = '...'; }, 100);
+            });
+        });
+    });
+</script>
+}

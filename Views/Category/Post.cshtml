@@ -1,0 +1,453 @@
+﻿@model ExchangeWebsite.Models.Post
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ExchangeWebsite.Models.User> UserManager
+@inject SignInManager<ExchangeWebsite.Models.User> SignInManager
+@using ExchangeWebsite.Models
+
+@{
+    ViewData["Title"] = Model.Title;
+    var userId = User.Identity.IsAuthenticated ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value : null;
+    var isAdmin = User.Identity.IsAuthenticated && UserManager.IsInRoleAsync(await UserManager.GetUserAsync(User), "Admin").Result;
+    var isOwner = User.Identity.IsAuthenticated && Model.UserId == UserManager.GetUserId(User);
+    var showShippingButton = User.Identity.IsAuthenticated && !Model.ShippingRequested && Model.UserId == userId;
+}
+<style>
+    body {
+        background: linear-gradient(135deg, #f4f8ff 0%, #eaf1fb 100%);
+    }
+
+    .post-detail-card {
+        background: #f4f8ff;
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(56,103,246,0.07);
+        margin: 48px auto 32px auto;
+        max-width: 800px;
+        padding: 36px 32px 32px 32px;
+        animation: fadeInUp 1.2s;
+        position: relative;
+    }
+
+    .post-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: #3867f6;
+        margin-bottom: 10px;
+    }
+
+    .post-meta {
+        color: #888;
+        font-size: 1rem;
+        margin-bottom: 18px;
+    }
+
+    .post-imgs {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+        .post-imgs img {
+            width: 180px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #eaf1fb;
+            box-shadow: 0 2px 8px rgba(56,103,246,0.08);
+        }
+
+    .post-desc {
+        font-size: 1.1rem;
+        color: #444;
+        margin-bottom: 18px;
+    }
+
+    .post-info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 18px 0;
+        font-size: 1.05rem;
+        color: #333;
+    }
+
+        .post-info-list li {
+            margin-bottom: 8px;
+        }
+
+    .delete-btn {
+        background: #ff4d4f;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: background 0.18s, box-shadow 0.18s;
+        box-shadow: 0 2px 8px rgba(255,77,79,0.08);
+        margin-top: 18px;
+    }
+
+        .delete-btn:hover {
+            background: #d9363e;
+            color: #fff;
+        }
+
+    .author-badge {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(90deg, #ffd700 0%, #ffe066 100%);
+        color: #b8860b;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border-radius: 12px;
+        padding: 2px 10px 2px 7px;
+        margin-left: 8px;
+        box-shadow: 0 1px 4px rgba(255, 215, 0, 0.12);
+        letter-spacing: 0.5px;
+        border: 1px solid #ffe066;
+        gap: 4px;
+    }
+
+        .author-badge svg {
+            width: 1em;
+            height: 1em;
+            margin-right: 3px;
+            vertical-align: middle;
+            fill: #b8860b;
+        }
+
+    .admin-badge {
+        display: inline-block;
+        background: #dc3545;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border-radius: 12px;
+        padding: 2px 10px 2px 10px;
+        margin-left: 8px;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="post-detail-card">
+    <div style="position: absolute; top: 24px; right: 32px;">
+        <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailModal">
+            <i class="bi bi-info-circle"></i> Thông tin chi tiết
+        </button>
+    </div>
+    <div class="post-title">@Model.Title</div>
+    <div class="post-meta">
+        <span>@Model.City</span> | <span>@Model.PostedAt.ToString("dd/MM/yyyy")</span>
+        @if (Model.Category != null)
+        {
+            <span> | <b>@Model.Category.CategoryName</b></span>
+        }
+        @if (Model.User != null)
+        {
+            <span> | Đăng bởi <b>@Model.User.UserName</b></span>
+        }
+    </div>
+    @if (Model.PostImages != null && Model.PostImages.Any())
+    {
+        <div class="post-imgs">
+            @foreach (var img in Model.PostImages)
+            {
+                <div style="width:300px; height:300px; overflow:hidden; display:inline-block; margin:5px; border-radius:12px; background:#eee;">
+                    <img src="@img.ImagePath" alt="Ảnh bài đăng"
+                         style="width:100%; height:100%; object-fit:contain; object-position:center; display:block; background:#fff;" />
+                </div>
+            }
+        </div>
+    }
+    <div class="post-desc">@Model.Description</div>
+    <ul class="post-info-list">
+        <li><b>Giá:</b> @Model.Price?.ToString("C0")</li>
+        <li><b>Email liên hệ:</b> @Model.ContactEmail</li>
+        <li><b>Số điện thoại:</b> @Model.PhoneNumber</li>
+        <li><b>Địa chỉ:</b> @Model.StreetAddress</li>
+        <li><b>Tình trạng:</b> @Model.Condition</li>
+        <li><b>Ngôn ngữ:</b> @Model.Language</li>
+    </ul>
+    @if (isAdmin || isOwner)
+    {
+        <form asp-action="DeletePost" asp-controller="Category" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa tin này?');" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.PostId" />
+            <button type="submit" class="delete-btn">Xóa tin</button>
+        </form>
+    }
+    @if (User.Identity.IsAuthenticated && Model.UserId != userId)
+    {
+        <button id="showReportBtn" class="btn btn-outline-danger ms-2" type="button" onclick="toggleReportForm()">Báo cáo</button>
+        <div id="reportForm" style="display:none; margin-top:16px;">
+            <form asp-action="ReportPost" asp-controller="Category" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="postId" value="@Model.PostId" />
+                <textarea name="description" class="form-control" rows="2" placeholder="Mô tả vấn đề..." required></textarea>
+                <button type="submit" class="btn btn-danger mt-2">Gửi</button>
+                <button type="button" class="btn btn-link mt-2" onclick="toggleReportForm()">Hủy</button>
+            </form>
+        </div>
+        <script>
+            function toggleReportForm() {
+                var form = document.getElementById('reportForm');
+                form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+            }
+        </script>
+    }
+    @if (showShippingButton)
+    {
+        <button id="showShippingBtn" class="btn btn-outline-success mt-2" type="button" onclick="toggleShippingForm()">Giao hàng?</button>
+        <div id="shippingForm" style="display:none; margin-top:16px;">
+            <div class="text-danger mb-2">
+                ReU hỗ trợ giao hàng: <br />
+                <b>20.000 VNĐ</b> nếu cùng thành phố, <b>50.000 VNĐ</b> nếu khác thành phố.
+            </div>
+            <form asp-action="RequestShipping" asp-controller="Category" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="postId" value="@Model.PostId" />
+
+                <div class="mb-2">
+                    <label for="SenderName" class="form-label">Tên người nhận</label>
+                    <input type="text" class="form-control" name="SenderName" id="SenderName" required />
+                </div>
+                <div class="mb-2">
+                    <label for="SenderPhone" class="form-label">Số điện thoại người nhận</label>
+                    <input type="text" class="form-control" name="SenderPhone" id="SenderPhone" required />
+                </div>
+                <div class="mb-2">
+                    <label for="SenderCity" class="form-label">Tỉnh/Thành phố</label>
+                    <select id="shippingCitySelect" name="SenderCity" class="form-select" required>
+                        <option value="">-- Chọn tỉnh/thành phố --</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label for="SenderDistrict" class="form-label">Quận/Huyện</label>
+                    <select id="shippingDistrictSelect" name="SenderDistrict" class="form-select" required>
+                        <option value="">-- Chọn quận/huyện --</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label for="SenderAddress" class="form-label">Địa chỉ chi tiết</label>
+                    <input type="text" class="form-control" name="SenderAddress" id="SenderAddress" required />
+                </div>
+                <div class="mb-2">
+                    <label for="ShippingPrice" class="form-label">Giá hàng(VNĐ)</label>
+                    <input type="number" class="form-control" name="ShippingPrice" id="ShippingPrice" required min="0" />
+                </div>
+
+                <button type="submit" class="btn btn-danger">Xác nhận giao hàng</button>
+                <button type="button" class="btn btn-link" onclick="toggleShippingForm()">Hủy</button>
+            </form>
+        </div>
+        <script>
+            // Tái sử dụng logic dropdown từ CreatePost
+            document.addEventListener('DOMContentLoaded', function () {
+                const citySelect = document.getElementById('shippingCitySelect');
+                const districtSelect = document.getElementById('shippingDistrictSelect');
+
+                fetch('/Category/ProvincesProxy')
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach(city => {
+                            const opt = document.createElement('option');
+                            opt.value = city.name;
+                            opt.textContent = city.name;
+                            opt.dataset.districts = JSON.stringify(city.districts);
+                            citySelect.appendChild(opt);
+                        });
+                    });
+
+                citySelect.addEventListener('change', function () {
+                    districtSelect.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
+                    const selected = citySelect.options[citySelect.selectedIndex];
+                    if (selected && selected.dataset.districts) {
+                        const districts = JSON.parse(selected.dataset.districts);
+                        districts.forEach(d => {
+                            const opt = document.createElement('option');
+                            opt.value = d.name;
+                            opt.textContent = d.name;
+                            districtSelect.appendChild(opt);
+                        });
+                    }
+                });
+            });
+
+            function toggleShippingForm() {
+                var form = document.getElementById('shippingForm');
+                form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+            }
+        </script>
+    }
+    @if (Model.ShippingRequested)
+    {
+        <div class="text-success mt-2"><b>Yêu cầu giao hàng đã được gửi tới ReU!</b></div>
+    }
+</div>
+
+<!-- Modal phải nằm ngoài post-detail-card để luôn căn giữa -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel">Thông tin chi tiết sản phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><b>Hãng (Make):</b> @Model.Make</li>
+                    <li class="list-group-item"><b>Model:</b> @Model.ModelNumber</li>
+                    <li class="list-group-item"><b>Mã bưu chính (ZipCode):</b> @Model.ZipCode</li>
+                    <li class="list-group-item"><b>Địa chỉ:</b> @Model.StreetAddress</li>
+                    <li class="list-group-item"><b>Chấp nhận tiền mã hóa:</b> @(Model.CryptocurrencyAccepted ? "Có" : "Không")</li>
+                    <li class="list-group-item"><b>Giao hàng tận nơi:</b> @(Model.DeliveryAvailable ? "Có" : "Không")</li>
+                    <li class="list-group-item"><b>Hiển thị địa chỉ:</b> @(Model.ShowAddress ? "Có" : "Không")</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="comments-section" style="margin-top:40px;">
+    <h4>Bình luận</h4>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <form asp-action="Add" asp-controller="Comment" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="postId" value="@Model.PostId" />
+            <textarea name="content" class="form-control" rows="2" placeholder="Thêm bình luận..." required></textarea>
+            <button type="submit" class="btn btn-primary mt-2">Bình luận</button>
+        </form>
+    }
+    else
+    {
+        <div>Vui lòng <a href="/Identity/Account/Login">đăng nhập</a> để bình luận.</div>
+    }
+
+    <div class="mt-4">
+        @if (Model.Comments != null)
+        {
+            @foreach (var comment in Model.Comments.Where(c => c.ParentCommentId == null).OrderByDescending(c => c.CreatedAt))
+            {
+                <div class="mb-3 p-2" style="background:#f8f9fa; border-radius:8px;">
+                    <b>
+                        @comment.User?.UserName
+                        @if (comment.UserId == Model.UserId)
+                        {
+                            <span class="author-badge">
+                                <svg viewBox="0 0 20 20"><path d="M10 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.27l-4.77 2.51.91-5.32-3.87-3.77 5.34-.78z" /></svg>
+                                Tác giả
+                            </span>
+                        }
+                        @if (IsAdmin(comment.UserId))
+                        {
+                            <span class="admin-badge">Quản trị</span>
+                        }
+                    </b>
+                    <span style="color:#888;">@comment.CreatedAt.ToString("g")</span>
+                    <div>@comment.Content</div>
+
+                    <!-- Nút Xóa và Báo cáo -->
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        if (UserManager.GetUserId(User) == comment.UserId || isAdmin)
+                        {
+                            <form asp-action="Delete" asp-controller="Comment" method="post" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@comment.CommentId" />
+                                <input type="hidden" name="postId" value="@Model.PostId" />
+                                <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                            </form>
+                        }
+                        <button type="button" class="btn btn-warning btn-sm" onclick="showReportForm(@comment.CommentId)">Báo cáo</button>
+                        <div id="report-form-@comment.CommentId" style="display:none; margin-top:8px;">
+                            <form asp-action="Report" asp-controller="Comment" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@comment.CommentId" />
+                                <input type="hidden" name="postId" value="@Model.PostId" />
+                                <textarea name="Reason" class="form-control" rows="2" placeholder="Nhập lý do báo cáo..." required></textarea>
+                                <button type="submit" class="btn btn-danger btn-sm mt-1">Gửi báo cáo</button>
+                                <button type="button" class="btn btn-link btn-sm mt-1" onclick="hideReportForm(@comment.CommentId)">Hủy</button>
+                            </form>
+                        </div>
+                        <script>
+                            function showReportForm(id) {
+                                document.getElementById('report-form-' + id).style.display = 'block';
+                            }
+                            function hideReportForm(id) {
+                                document.getElementById('report-form-' + id).style.display = 'none';
+                            }
+                        </script>
+                    }
+                    <!-- ... phần trả lời và reply giữ nguyên ... -->
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <form asp-action="Add" asp-controller="Comment" method="post" class="mt-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="postId" value="@Model.PostId" />
+                            <input type="hidden" name="parentCommentId" value="@comment.CommentId" />
+                            <input type="text" name="content" class="form-control" placeholder="Trả lời..." required />
+                            <button type="submit" class="btn btn-link btn-sm">Trả lời</button>
+                        </form>
+                    }
+                    @if (comment.Replies != null && comment.Replies.Any())
+                    {
+                        <div class="ml-4 mt-2">
+                            @foreach (var reply in comment.Replies.OrderBy(r => r.CreatedAt))
+                            {
+                                <div class="mb-2 p-2" style="background:#eef2fa; border-radius:8px;">
+                                    <b>
+                                        @reply.User?.UserName
+                                        @if (reply.UserId == Model.UserId)
+                                        {
+                                            <span class="author-badge">
+                                                <svg viewBox="0 0 20 20"><path d="M10 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.27l-4.77 2.51.91-5.32-3.87-3.77 5.34-.78z" /></svg>
+                                                Tác giả
+                                            </span>
+                                        }
+                                        @if (IsAdmin(reply.UserId))
+                                        {
+                                            <span class="admin-badge">Quản trị</span>
+                                        }
+                                    </b>
+                                    <span style="color:#888;">@reply.CreatedAt.ToString("g")</span>
+                                    <div>@reply.Content</div>
+                                    @if (User.Identity.IsAuthenticated && (UserManager.GetUserId(User) == reply.UserId || isAdmin))
+                                    {
+                                        <form asp-action="Delete" asp-controller="Comment" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@reply.CommentId" />
+                                            <input type="hidden" name="postId" value="@Model.PostId" />
+                                            <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                                        </form>
+                                    }
+                                    <button type="button" class="btn btn-warning btn-sm" onclick="showReportForm(@reply.CommentId)">Báo cáo</button>
+                                    <div id="report-form-@reply.CommentId" style="display:none; margin-top:8px;">
+                                        <form asp-action="Report" asp-controller="Comment" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@reply.CommentId" />
+                                            <input type="hidden" name="postId" value="@Model.PostId" />
+                                            <textarea name="Reason" class="form-control" rows="2" placeholder="Nhập lý do báo cáo..." required></textarea>
+                                            <button type="submit" class="btn btn-danger btn-sm mt-1">Gửi báo cáo</button>
+                                            <button type="button" class="btn btn-link btn-sm mt-1" onclick="hideReportForm(@reply.CommentId)">Hủy</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+@functions {
+    public bool IsAdmin(string userId)
+    {
+        if (string.IsNullOrEmpty(userId)) return false;
+        var user = UserManager.FindByIdAsync(userId).Result;
+        if (user == null) return false;
+        return UserManager.IsInRoleAsync(user, "Admin").Result;
+    }
+}

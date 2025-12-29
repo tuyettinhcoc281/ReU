@@ -1,0 +1,234 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
+@using ExchangeWebsite.Models
+
+@model IEnumerable<ExchangeWebsite.Models.ShippingRequest>
+
+@{
+    ViewData["Title"] = "Yêu cầu vận chuyển";
+    var currentUser = UserManager.GetUserAsync(User).Result;
+    var isAdmin = User.IsInRole("Admin");
+    var isShipper = User.IsInRole("Shipper");
+    var isNormalAccount = !isAdmin && !isShipper;
+    var shippers = ViewBag.Shippers as IEnumerable<User>;
+}
+
+<h2>Yêu cầu vận chuyển</h2>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["StatusMessage"]</div>
+}
+
+@if (isAdmin)
+{
+    <h4>Phân công shipper</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tiêu đề bài viết</th>
+                <th>Người gửi</th>
+                <th>Người nhận</th>
+                <th>Giá vận chuyển</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var request in Model)
+            {
+                <tr>
+                    <td>@request.Post?.Title</td>
+                    <td>@request.Post?.User?.UserName</td>
+                    <td>@request.SenderName</td>
+                    <td>@request.ShippingPrice.ToString("N0")</td>
+                    <td>@request.Status</td>
+                    <td>
+                        @if (string.IsNullOrEmpty(request.ShipperId) && request.Status != "Hoàn thành")
+                        {
+                            <form asp-action="AssignShipper" asp-controller="Admin" method="post" style="display:inline" onsubmit="return validateShipperSelect(this)">
+                                <input type="hidden" name="id" value="@request.ShippingRequestId" />
+                                <select name="shipperId" class="form-select form-select-sm d-inline-block" style="width:auto;" onchange="toggleAssignButton(this)">
+                                    <option value="">-- Chọn shipper --</option>
+                                    @foreach (var shipper in shippers ?? Enumerable.Empty<User>())
+                                    {
+                                        <option value="@shipper.Id">@shipper.UserName</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-warning" disabled>Assign Shipper</button>
+                                <div class="text-danger small mt-1 d-none">Vui lòng chọn shipper!</div>
+                            </form>
+                        }
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#detailModal-@request.ShippingRequestId">
+                            Thông tin chi tiết
+                        </button>
+                        <a asp-controller="Category" asp-action="Post" asp-route-id="@request.PostId" class="btn btn-sm btn-info">
+                            Xem bài viết
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @foreach (var request in Model)
+    {
+        <div class="modal fade" id="detailModal-@request.ShippingRequestId" tabindex="-1" aria-labelledby="detailModalLabel-@request.ShippingRequestId" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailModalLabel-@request.ShippingRequestId">Thông tin chi tiết</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <strong>Thành phố người gửi:</strong> @request.Post?.City <br />
+                        <strong>Email liên hệ người gửi:</strong> @request.Post?.ContactEmail <br />
+                        <strong>Số điện thoại người gửi:</strong> @request.Post?.PhoneNumber <br />
+                        <strong>Thành phố người nhận:</strong> @request.SenderCity <br />
+                        <strong>Số điện thoại người nhận:</strong> @request.SenderPhone <br />
+                        <strong>Địa chỉ người nhận:</strong> @request.SenderAddress <br />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else if (isShipper)
+{
+    <h4>Cập nhật trạng thái giao hàng</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã yêu cầu</th>
+                <th>Người nhận</th>
+                <th>Điện thoại</th>
+                <th>Thành phố</th>
+                <th>Quận/Huyện</th>
+                <th>Địa chỉ</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ShippingRequestId</td>
+                    <td>@item.SenderName</td>
+                    <td>@item.SenderPhone</td>
+                    <td>@item.SenderCity</td>
+                    <td>@item.SenderDistrict</td>
+                    <td>@item.SenderAddress</td>
+                    <td>@item.Status</td>
+                    <td>
+                        @if (item.Status != "Hoàn thành")
+                        {
+                            <form asp-action="UpdateShippingStatus" asp-controller="Shipping" method="post" style="display:inline">
+                                <input type="hidden" name="shippingRequestId" value="@item.ShippingRequestId" />
+                                <select name="newStatus" class="form-select">
+                                    <option value="Đang về kho" selected="@(item.Status == "Đang về kho" ? "true" : "false")">Đang về kho</option>
+                                    <option value="Đang giao" selected="@(item.Status == "Đang giao" ? "true" : "false")">Đang giao</option>
+                                    <option value="Hoàn thành" selected="@(item.Status == "Hoàn thành" ? "true" : "false")">Hoàn thành</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">Cập nhật</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-success">Đã hoàn thành</span>
+                        }
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#senderModal-@item.ShippingRequestId">
+                            Thông tin người gửi
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @foreach (var item in Model)
+    {
+        <div class="modal fade" id="senderModal-@item.ShippingRequestId" tabindex="-1" aria-labelledby="senderModalLabel-@item.ShippingRequestId" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="senderModalLabel-@item.ShippingRequestId">Thông tin người gửi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <strong>Tên người gửi:</strong> @item.Post?.User?.UserName <br />
+                        <strong>Email:</strong> @item.Post?.ContactEmail <br />
+                        <strong>Số điện thoại:</strong> @item.Post?.PhoneNumber <br />
+                        <strong>Thành phố:</strong> @item.Post?.City <br />
+                        <strong>Địa chỉ:</strong> @item.Post?.StreetAddress <br />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else if (isNormalAccount)
+{
+    <h4>Theo dõi đơn hàng của bạn</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã đơn hàng</th>
+                <th>Tiêu đề bài viết</th>
+                <th>Người nhận</th>
+                <th>Điện thoại người nhận</th>
+                <th>Địa chỉ người nhận</th>
+                <th>Giá vận chuyển</th>
+                <th>Trạng thái</th>
+                <th>Ngày yêu cầu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Where(x => x.Post?.UserId == currentUser?.Id))
+            {
+                <tr>
+                    <td>@order.ShippingRequestId</td>
+                    <td>@order.Post?.Title</td>
+                    <td>@order.SenderName</td>
+                    <td>@order.SenderPhone</td>
+                    <td>@order.SenderAddress</td>
+                    <td>@order.ShippingPrice.ToString("N0")</td>
+                    <td>@order.Status</td>
+                    <td>@order.RequestedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@section Scripts {
+    <script>
+        function toggleAssignButton(select) {
+            var form = select.form;
+            var btn = form.querySelector('button[type="submit"]');
+            var error = form.querySelector('.text-danger');
+            if (select.value) {
+                btn.disabled = false;
+                error.classList.add('d-none');
+            } else {
+                btn.disabled = true;
+            }
+        }
+        function validateShipperSelect(form) {
+            var select = form.querySelector('select[name="shipperId"]');
+            var error = form.querySelector('.text-danger');
+            if (!select.value) {
+                error.classList.remove('d-none');
+                return false;
+            }
+            return true;
+        }
+    </script>
+}

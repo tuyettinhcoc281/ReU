@@ -1,0 +1,34 @@
+﻿@model IEnumerable<ExchangeWebsite.Models.Post>
+@{
+    ViewData["Title"] = "Bài đăng";
+}
+<h2>Bài đăng</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tiêu đề</th>
+            <th>Người đăng</th>
+            <th>Danh mục</th>
+            <th>Ngày đăng</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var post in Model)
+        {
+            <tr>
+                <td>@post.Title</td>
+                <td>@post.User?.UserName</td>
+                <td>@post.Category?.CategoryName</td>
+                <td>@post.PostedAt.ToString("g")</td>
+                <td>
+                    <a asp-action="PostDetail" asp-route-id="@post.PostId" class="btn btn-sm btn-info">Xem</a>
+                    <form asp-action="DeletePost" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@post.PostId" />
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa bài đăng này?');">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

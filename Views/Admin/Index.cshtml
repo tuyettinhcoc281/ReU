@@ -1,0 +1,164 @@
+﻿@using Microsoft.EntityFrameworkCore
+@{
+    ViewData["Title"] = "Trang quản trị";
+}
+
+<style>
+    body {
+        background-color: #f4f7ff !important;
+    }
+    .admin-dashboard-row {
+        margin-top: 40px;
+        margin-bottom: 40px;
+    }
+    .admin-dashboard-card {
+        min-width: 220px;
+        min-height: 180px;
+        background-color: #f4f7ff;
+        border: 1.5px solid #e0e6f7;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #222;
+        transition: box-shadow 0.2s;
+    }
+    .admin-dashboard-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    }
+    .admin-dashboard-card .card-title {
+        font-weight: 600;
+        color: #2a3b8f;
+    }
+    .admin-dashboard-card .card-text {
+        font-size: 2.5rem;
+        color: #1a237e;
+    }
+    .admin-dashboard-card .btn {
+        background: #2a3b8f;
+        color: #fff;
+        border: none;
+    }
+    .admin-dashboard-card .btn:hover {
+        background: #1a237e;
+        color: #fff;
+    }
+    @@media (max-width: 991px) {
+        .admin-dashboard-row {
+            flex-direction: column !important;
+        }
+        .admin-dashboard-card {
+            margin-bottom: 24px;
+        }
+    }
+</style>
+
+<div class="container-fluid px-0">
+    <h2 class="mb-4 ms-4 mt-4">Admin Dashboard</h2>
+    <div class="row g-4 admin-dashboard-row justify-content-center">
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Categories</h5>
+                    <p class="card-text">@ViewBag.CategoryCount</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="Categories" class="btn btn-sm w-100">Quản lý danh mục</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Users</h5>
+                    <p class="card-text">@ViewBag.UserCount</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="Users" class="btn btn-sm w-100">Quản lý người dùng</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Posts</h5>
+                    <p class="card-text">@ViewBag.PostCount</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="Posts" class="btn btn-sm w-100">Quản lý bài đăng</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Revenue</h5>
+                    <p class="card-text">$@ViewBag.Revenue</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="Revenue" class="btn btn-sm w-100">Doanh thu</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Reports</h5>
+                    <p class="card-text">@ViewBag.ReportCount</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="Reports" class="btn btn-sm w-100">Xem báo cáo vi phạm</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Shipping</h5>
+                    <p class="card-text">@ViewBag.ShippingCount</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="ShippingRequests" class="btn btn-sm w-100">Yêu cầu giao hàng</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Announcements</h5>
+                    <p class="card-text">
+                        @ViewBag.AnnouncementCount
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="Announcements" class="btn btn-sm w-100">Quản lý thông báo</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Comment Reports</h5>
+                    <p class="card-text">
+                        @ViewBag.CommentReportCount
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="CommentReports" class="btn btn-sm w-100">Xem báo cáo bình luận</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card admin-dashboard-card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">VIP Users</h5>
+                    <p class="card-text">
+                        @ViewBag.VipUserCount
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-action="Users" class="btn btn-sm w-100">Xem danh sách VIP</a>
+                </div>
+            </div>
+        </div>

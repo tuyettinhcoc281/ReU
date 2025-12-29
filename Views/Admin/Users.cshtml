@@ -1,0 +1,181 @@
+﻿@using Microsoft.AspNetCore.Identity  
+@model IEnumerable<ExchangeWebsite.Models.User>  
+@{  
+    ViewData["Title"] = "Người dùng";  
+    var allRoles = ViewBag.AllRoles as List<string>;  
+    var userRolesDict = ViewBag.UserRolesDict as Dictionary<string, string>;
+    int userPage = ViewBag.UserPage ?? 1; // Removed duplicate declaration
+    int userTotalPages = ViewBag.UserTotalPages ?? 1;
+    int startPage = Math.Max(1, userPage - 1);
+    int endPage = Math.Min(userTotalPages, userPage + 1);
+}  
+<h2>Người dùng</h2>  
+<table class="table">  
+    <thead>  
+        <tr>  
+            <th>Tên đăng nhập</th>  
+            <th>Email</th>  
+            <th>VIP</th>  
+            <th>Trạng thái</th>  
+            <th>Role</th>  
+            <th>Thao tác</th>  
+        </tr>  
+    </thead>  
+    <tbody>  
+        @foreach (var user in Model)  
+        {  
+            <tr>  
+                <td>@user.UserName</td>  
+                <td>@user.Email</td>  
+                <td>
+                    <form asp-action="ToggleVip" method="post" style="display:inline;">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button type="submit" class="btn btn-sm @(user.IsVip ? "btn-success" : "btn-outline-secondary")">
+                            @(user.IsVip ? "VIP" : "Không VIP")
+                        </button>
+                    </form>
+                </td>  
+                <td>  
+                    @if (user.LockoutEnd != null && user.LockoutEnd > DateTime.UtcNow)  
+                    {  
+                        <span class="text-danger">Đã khóa</span>  
+                    }  
+                    else  
+                    {  
+                        <span class="text-success">Đang hoạt động</span>  
+                    }  
+                </td>  
+                <td>  
+                    <form asp-action="UpdateUserRole" method="post" style="display:inline;">  
+                        <input type="hidden" name="userId" value="@user.Id" />  
+                        <select name="newRole" class="form-select form-select-sm" style="width:auto;display:inline-block;">  
+                            <option value="">-- None --</option>  
+                            @foreach (var role in allRoles)  
+                            {  
+                                var isSelected = userRolesDict != null && userRolesDict.ContainsKey(user.Id) && userRolesDict[user.Id] == role;  
+                                <option value="@role" selected="@(isSelected ? "selected" : null)">@role</option>  
+                            }  
+                        </select>  
+                        <button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>  
+                    </form>  
+                </td>  
+                <td>  
+                    @if (user.LockoutEnd == null || user.LockoutEnd < DateTime.UtcNow)  
+                    {  
+                        <form asp-action="LockUser" method="post" style="display:inline;">  
+                            <input type="hidden" name="id" value="@user.Id" />  
+                            <button type="submit" class="btn btn-sm btn-warning">Khóa</button>  
+                        </form>  
+                    }  
+                    else  
+                    {  
+                        <form asp-action="UnlockUser" method="post" style="display:inline;">  
+                            <input type="hidden" name="id" value="@user.Id" />  
+                            <button type="submit" class="btn btn-sm btn-success">Mở khóa</button>  
+                        </form>  
+                    }  
+                </td>  
+            </tr>  
+        }  
+    </tbody>  
+</table>
+<nav aria-label="User pagination" class="mt-3">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(userPage == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Users", "Admin", new { userPage = userPage - 1 })">Previous</a>
+        </li>
+        @if (startPage > 1)
+        {
+            <li class="page-item"><a class="page-link" href="@Url.Action("Users", "Admin", new { userPage = 1 })">1</a></li>
+            @if (startPage > 2)
+            {
+                <li class="page-item">
+                    <a href="javascript:void(0);" class="page-link page-ellipsis" data-pos="start">...</a>
+                </li>
+            }
+        }
+        @for (int i = startPage; i <= endPage; i++)
+        {
+            <li class="page-item @(i == userPage ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Users", "Admin", new { userPage = i })">@i</a>
+            </li>
+        }
+        @if (endPage < userTotalPages)
+        {
+            if (endPage < userTotalPages - 1)
+            {
+                <li class="page-item">
+                    <a href="javascript:void(0);" class="page-link page-ellipsis" data-pos="end">...</a>
+                </li>
+            }
+            <li class="page-item"><a class="page-link" href="@Url.Action("Users", "Admin", new { userPage = userTotalPages })">@userTotalPages</a></li>
+        }
+        <li class="page-item @(userPage == userTotalPages ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Users", "Admin", new { userPage = userPage + 1 })">Next</a>
+        </li>
+    </ul>
+</nav>
+
+<style>
+    .pagination .page-item.active .page-link {
+        background-color: #3867f6 !important;
+        border-color: #3867f6 !important;
+        color: #fff !important;
+    }
+    .pagination .page-link {
+        color: #3867f6;
+        border-radius: 6px;
+        margin: 0 2px;
+        border: 1px solid #e0e0e0;
+        min-width: 40px;
+        text-align: center;
+    }
+    .pagination .page-item.disabled .page-link {
+        color: #aaa;
+        background: #f4f8ff;
+        border: 1px solid #e0e0e0;
+    }
+    .pagination input[type="number"] {
+        border: 1px solid #b3d0ff;
+        border-radius: 6px;
+        outline: none;
+    }
+</style>
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.page-ellipsis').forEach(function (el) {
+        el.addEventListener('click', function () {
+            if (el.querySelector('input')) return;
+            var input = document.createElement('input');
+            input.type = 'number';
+            input.min = 1;
+            input.max = @userTotalPages;
+            input.style.width = '50px';
+            input.style.height = '28px';
+            input.style.textAlign = 'center';
+            input.value = '';
+            input.placeholder = '...';
+            el.innerHTML = '';
+            el.appendChild(input);
+            input.focus();
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    var val = parseInt(input.value);
+                    if (!isNaN(val) && val >= 1 && val <= @userTotalPages) {
+                        window.location.href = '@Url.Action("Users", "Admin")' + '?userPage=' + val;
+                    }
+                }
+                if (e.key === 'Escape') {
+                    el.innerHTML = '...';
+                }
+            });
+
+            input.addEventListener('blur', function () {
+                setTimeout(function () { el.innerHTML = '...'; }, 100);
+            });
+        });
+    });
+</script>
+}

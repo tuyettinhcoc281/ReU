@@ -1,0 +1,47 @@
+﻿@model ExchangeWebsite.Models.Category
+@{
+    ViewData["Title"] = "Tạo Danh Mục";
+    var categories = ViewBag.Categories as List<ExchangeWebsite.Models.Category>;
+}
+<h2>Tạo Danh Mục / Danh Mục Con</h2>
+
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+@if (ViewBag.Errors != null)
+{
+    <ul class="text-danger">
+        @foreach (var err in ViewBag.Errors)
+        {
+            <li>@err</li>
+        }
+    </ul>
+}
+
+<form asp-action="CreateCategory" method="post">
+    <div class="mb-3">
+        <label asp-for="CategoryName" class="form-label"></label>
+        <input asp-for="CategoryName" class="form-control" />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label>Danh mục cha (để trống nếu là danh mục chính)</label>
+        <select asp-for="ParentCategoryId" class="form-control">
+            <option value="">-- Không có --</option>
+            @if (categories != null)
+            {
+                foreach (var cat in categories)
+                {
+                    <option value="@cat.CategoryId">@cat.CategoryName</option>
+                }
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Tạo</button>
+    <a href="@Url.Action("Categories")" class="btn btn-secondary">Quay lại</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

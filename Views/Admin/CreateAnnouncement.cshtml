@@ -1,0 +1,19 @@
+﻿@model ExchangeWebsite.Models.Announcement
+
+@{
+    ViewData["Title"] = "Đăng thông báo";
+}
+
+<h2>Đăng thông báo</h2>
+<form asp-action="CreateAnnouncement" method="post">
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">Tiêu đề</label>
+        <input asp-for="Title" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Content" class="form-label">Nội dung</label>
+        <textarea asp-for="Content" class="form-control" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Đăng</button>
+    <a asp-action="Announcements" class="btn btn-secondary">Quay lại</a>
+</form>
